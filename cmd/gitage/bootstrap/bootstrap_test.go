@@ -27,14 +27,17 @@ func Test(t *testing.T) {
 		{dir: "init-wrong-repo", args: []string{"init", "-p", "/repo"}},
 		{dir: "init-repo-with-single-recipient", args: []string{"init", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
 		{dir: "init-repo-with-multiple-recipients", args: []string{"init", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg"}},
-		// register no args
+		{dir: "register-no-args", args: []string{"register", "-p", "/repo"}},
 		{dir: "register-empty-repo", args: []string{"register", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
+		{dir: "register-first-recipient", args: []string{"register", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
+		{dir: "register-repeated-recipient", args: []string{"register", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
 		{dir: "register-single-recipient", args: []string{"register", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg"}},
 		{dir: "register-multiple-recipients", args: []string{"register", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg", "-r", "age1yhm4gctwfmrpz87tdslm550wrx6m79y9f2hdzt0lndjnehwj0ukqrjpyx5"}},
-		// unregister no args
+		{dir: "unregister-no-args", args: []string{"unregister", "-p", "/repo"}},
 		{dir: "unregister-empty-repo", args: []string{"unregister", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
-		// unregister single
-		// unregister multiple
+		{dir: "unregister-single-recipient", args: []string{"unregister", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg"}},
+		{dir: "unregister-multiple-recipients", args: []string{"unregister", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg", "-r", "age1yhm4gctwfmrpz87tdslm550wrx6m79y9f2hdzt0lndjnehwj0ukqrjpyx5"}},
+		{dir: "unregister-last-recipient", args: []string{"unregister", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
 	}
 
 	for _, tc := range tcs {

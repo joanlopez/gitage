@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/joanlopez/gitage/internal/fs"
 	"github.com/joanlopez/gitage/internal/log"
@@ -37,8 +38,24 @@ Are you in a Gitage repository?`, gitageDir)
 
 	log.For(ctx).Println("Registering recipients...")
 
-	if err := fs.Append(f, recipientsFilepath, recipientsBytes(recipients...)); err != nil {
+	contents, err := fs.Read(f, recipientsFilepath)
+	if err != nil {
 		return err
+	}
+
+	var bytes []byte
+
+	for _, r := range recipients {
+		if !strings.Contains(string(contents), r) {
+			bytes = append(bytes, []byte(r)...)
+			bytes = append(bytes, []byte("\n")...)
+		}
+	}
+
+	if len(bytes) > 0 {
+		if err := fs.Append(f, recipientsFilepath, recipientsBytes(recipients...)); err != nil {
+			return err
+		}
 	}
 
 	log.For(ctx).Println("Recipients registered with success!")

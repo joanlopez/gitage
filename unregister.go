@@ -1,6 +1,8 @@
 package gitage
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -35,9 +37,37 @@ Are you in a Gitage repository?`, gitageDir)
 		return err
 	}
 
-	log.For(ctx).Println("Registering recipients...")
+	log.For(ctx).Println("Unregistering recipients...")
 
-	log.For(ctx).Println("Recipients registered with success!")
+	contents, err := fs.Read(f, recipientsFilepath)
+	if err != nil {
+		return err
+	}
+
+	var result []byte
+
+	fileScanner := bufio.NewScanner(bytes.NewBuffer(contents))
+	for fileScanner.Scan() {
+		next := fileScanner.Text()
+		if !present(next, recipients...) {
+			result = append(result, []byte(next)...)
+			result = append(result, []byte("\n")...)
+		}
+	}
+
+	fs.Create(f, recipientsFilepath, result)
+
+	log.For(ctx).Println("Recipients unregistered with success!")
 
 	return nil
+}
+
+func present(r string, recipients ...string) bool {
+	for _, recipient := range recipients {
+		if r == recipient {
+			return true
+		}
+	}
+
+	return false
 }

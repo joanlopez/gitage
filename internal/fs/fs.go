@@ -50,11 +50,12 @@ func Read(fs FS, path string) ([]byte, error) {
 		return nil, err
 	}
 
-	if _, err := f.Write(contents); err != nil {
-		return err
+	contents, err := afero.ReadAll(f)
+	if err != nil {
+		return nil, err
 	}
 
-	return f.Close()
+	return contents, f.Close()
 }
 
 func rootify(path string) string {
