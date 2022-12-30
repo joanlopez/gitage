@@ -35,7 +35,7 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:   "gitage",
-		Short: "Git+Age = Gitage; simple, modern and secure Git encryption tool",
+		Short: "Git+age = Gitage; simple, modern and secure Git encryption tool",
 		Long: `Gitage is a CLI tool that can be used as a wrapper of Git CLI.
 It uses 'age' encryption tool to encrypt files before committing them to the repository.`,
 		CompletionOptions: cobra.CompletionOptions{
