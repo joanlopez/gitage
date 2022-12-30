@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/joanlopez/gitage/internal/log"
 	"os"
 
 	"github.com/joanlopez/gitage/cmd/gitage/bootstrap"
@@ -8,5 +9,6 @@ import (
 )
 
 func main() {
-	bootstrap.Run(afero.NewOsFs(), os.Stdout, os.Args[1:]...)
+	ctx := log.Ctx(os.Stdout)
+	bootstrap.Run(ctx, afero.NewOsFs(), os.Args[1:]...)
 }

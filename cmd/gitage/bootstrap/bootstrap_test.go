@@ -1,4 +1,4 @@
-package bootstrap
+package bootstrap_test
 
 import (
 	"bytes"
@@ -6,18 +6,38 @@ import (
 	"os"
 	"testing"
 
-	"github.com/joanlopez/gitage/internal/fs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/tools/txtar"
+
+	"github.com/joanlopez/gitage/cmd/gitage/bootstrap"
+	"github.com/joanlopez/gitage/internal/fs"
+	"github.com/joanlopez/gitage/internal/log"
 )
 
 func Test(t *testing.T) {
+	t.Parallel()
+
 	tcs := []struct {
 		dir  string
 		args []string
 	}{
 		{dir: "init-empty-repo", args: []string{"init", "-p", "/repo"}},
+		{dir: "init-existing-repo", args: []string{"init", "-p", "/repo"}},
+		{dir: "init-wrong-repo", args: []string{"init", "-p", "/repo"}},
+		{dir: "init-repo-with-single-recipient", args: []string{"init", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
+		{dir: "init-repo-with-multiple-recipients", args: []string{"init", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg"}},
+		{dir: "register-no-args", args: []string{"register", "-p", "/repo"}},
+		{dir: "register-empty-repo", args: []string{"register", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
+		{dir: "register-first-recipient", args: []string{"register", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
+		{dir: "register-repeated-recipient", args: []string{"register", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
+		{dir: "register-single-recipient", args: []string{"register", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg"}},
+		{dir: "register-multiple-recipients", args: []string{"register", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg", "-r", "age1yhm4gctwfmrpz87tdslm550wrx6m79y9f2hdzt0lndjnehwj0ukqrjpyx5"}},
+		{dir: "unregister-no-args", args: []string{"unregister", "-p", "/repo"}},
+		{dir: "unregister-empty-repo", args: []string{"unregister", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
+		{dir: "unregister-single-recipient", args: []string{"unregister", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg"}},
+		{dir: "unregister-multiple-recipients", args: []string{"unregister", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg", "-r", "age1yhm4gctwfmrpz87tdslm550wrx6m79y9f2hdzt0lndjnehwj0ukqrjpyx5"}},
+		{dir: "unregister-last-recipient", args: []string{"unregister", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
 	}
 
 	for _, tc := range tcs {
@@ -32,9 +52,10 @@ func Test(t *testing.T) {
 
 			// Create a new buffer to capture the output
 			out := new(bytes.Buffer)
+			ctx := log.Ctx(out)
 
 			// Run the bootstrap
-			Run(f, out, tc.args...)
+			bootstrap.Run(ctx, f, tc.args...)
 
 			// Expected result
 			expected := fsFromTxtarFile(t, tc.dir, "expected")
