@@ -2,6 +2,7 @@ package fs
 
 import (
 	stdfs "io/fs"
+	"os"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -21,6 +22,32 @@ func Create(fs FS, path string, contents []byte) error {
 	f, err := fs.Create(rootify(path))
 	if err != nil {
 		return err
+	}
+
+	if _, err := f.Write(contents); err != nil {
+		return err
+	}
+
+	return f.Close()
+}
+
+func Append(fs FS, path string, contents []byte) error {
+	f, err := fs.OpenFile(rootify(path), os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+
+	if _, err := f.Write(contents); err != nil {
+		return err
+	}
+
+	return f.Close()
+}
+
+func Read(fs FS, path string) ([]byte, error) {
+	f, err := fs.Open(rootify(path))
+	if err != nil {
+		return nil, err
 	}
 
 	if _, err := f.Write(contents); err != nil {
