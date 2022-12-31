@@ -42,11 +42,15 @@ func New(ctx context.Context, fs fs.FS) *CLI {
 
 	// Register
 	c.registerCmd().Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
-	c.registerCmd().MarkFlagRequired("recipient")
+	if err := c.registerCmd().MarkFlagRequired("recipient"); err != nil {
+		panic(err)
+	}
 
 	// Unregister
 	c.unregisterCmd().Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
-	c.unregisterCmd().MarkFlagRequired("recipient")
+	if err := c.unregisterCmd().MarkFlagRequired("recipient"); err != nil {
+		panic(err)
+	}
 
 	return c
 }

@@ -55,7 +55,9 @@ Are you in a Gitage repository?`, gitageDir)
 		}
 	}
 
-	fs.Create(f, recipientsFilepath, result)
+	if err := fs.Create(f, recipientsFilepath, result); err != nil {
+		return err
+	}
 
 	log.For(ctx).Println("Recipients unregistered with success!")
 

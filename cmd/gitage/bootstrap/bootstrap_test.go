@@ -106,5 +106,5 @@ func compareEqualFs(t *testing.T, fs1, fs2 fs.FS) {
 }
 
 func compareEqualOutput(t *testing.T, dir string, out *bytes.Buffer) {
-	assert.Equal(t, string(expectedOut(t, dir)), string(out.Bytes()))
+	assert.Equal(t, string(expectedOut(t, dir)), out.String())
 }
