@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+
 	"github.com/spf13/cobra"
 
 	"github.com/joanlopez/gitage/internal/fs"
@@ -12,14 +13,17 @@ type CLI struct {
 	fs  fs.FS
 
 	// Flags
-	path       string
-	recipients []string
+	path           string
+	recipients     []string
+	identitiesPath string
 
 	// Commands
 	root       *cobra.Command
 	init       *cobra.Command
 	register   *cobra.Command
 	unregister *cobra.Command
+	encrypt    *cobra.Command
+	decrypt    *cobra.Command
 }
 
 func New(ctx context.Context, fs fs.FS) *CLI {
@@ -36,6 +40,8 @@ func New(ctx context.Context, fs fs.FS) *CLI {
 	c.rootCmd().AddCommand(c.initCmd())
 	c.rootCmd().AddCommand(c.registerCmd())
 	c.rootCmd().AddCommand(c.unregisterCmd())
+	c.rootCmd().AddCommand(c.encryptCmd())
+	c.rootCmd().AddCommand(c.decryptCmd())
 
 	// Init
 	c.initCmd().Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
@@ -49,6 +55,18 @@ func New(ctx context.Context, fs fs.FS) *CLI {
 	// Unregister
 	c.unregisterCmd().Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
 	if err := c.unregisterCmd().MarkFlagRequired("recipient"); err != nil {
+		panic(err)
+	}
+
+	// Encrypt
+	c.encryptCmd().Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
+	if err := c.encryptCmd().MarkFlagRequired("recipient"); err != nil {
+		panic(err)
+	}
+
+	// Decrypt
+	c.decryptCmd().Flags().StringVarP(&c.identitiesPath, "identities", "i", "", "path to the identities file")
+	if err := c.decryptCmd().MarkFlagRequired("identities"); err != nil {
 		panic(err)
 	}
 

@@ -1,8 +1,9 @@
 package cli
 
 import (
-	"github.com/joanlopez/gitage"
 	"github.com/spf13/cobra"
+
+	"github.com/joanlopez/gitage"
 )
 
 func (c *CLI) registerCmd() *cobra.Command {
