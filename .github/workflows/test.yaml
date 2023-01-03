@@ -23,8 +23,8 @@ jobs:
             ${{ runner.os }}-go-
       # See https://github.com/gobuffalo/.github/issues/2
       - name: Run tests (on Windows, w/out -race)
-        if: ${{ matrix.os != 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-latest' }}
         run: go test ./...
       - name: Run tests (on Linux/MacOS, w/ -race)
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os != 'windows-latest' }}
         run: go test -race ./...
