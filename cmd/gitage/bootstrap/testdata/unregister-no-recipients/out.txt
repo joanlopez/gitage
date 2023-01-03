@@ -1,1 +1,11 @@
+Usage:
+  gitage unregister [flags]
+
+Flags:
+  -h, --help                    help for unregister
+  -r, --recipient stringArray   recipients to encrypt the repository
+
+Global Flags:
+  -p, --path string   path to the repository
+
 Error: required flag(s) "recipient" not set

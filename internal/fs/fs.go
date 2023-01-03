@@ -6,7 +6,8 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
-	"golang.org/x/tools/txtar"
+
+	"github.com/joanlopez/gitage/internal/fs/archive"
 )
 
 const root = "/"
@@ -65,9 +66,9 @@ func rootify(path string) string {
 	return root + path
 }
 
-func FromTxtar(archive *txtar.Archive) (FS, error) {
+func FromArchive(a *archive.Archive) (FS, error) {
 	fs := afero.NewMemMapFs()
-	for _, f := range archive.Files {
+	for f := range a.Files() {
 		if err := afero.WriteFile(fs, f.Name, f.Data, 0644); err != nil {
 			return nil, err
 		}
@@ -76,8 +77,8 @@ func FromTxtar(archive *txtar.Archive) (FS, error) {
 	return fs, nil
 }
 
-func ToTxtar(fs FS) (*txtar.Archive, error) {
-	a := new(txtar.Archive)
+func ToArchive(fs FS) (*archive.Archive, error) {
+	a := archive.Empty()
 	err := afero.Walk(fs, "/", func(path string, info stdfs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -88,11 +89,7 @@ func ToTxtar(fs FS) (*txtar.Archive, error) {
 			return err
 		}
 
-		a.Files = append(a.Files, txtar.File{
-			Name: path,
-			Data: contents,
-		})
-
+		a.Add(archive.NewFile(path, contents))
 		return nil
 	})
 

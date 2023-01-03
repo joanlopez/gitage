@@ -32,7 +32,7 @@ func EncryptAll(ctx context.Context, f fs.FS, path string, recipients ...age.Rec
 		}
 
 		// Skip encrypted files
-		if filepath.Ext(path) == ageExt {
+		if filepath.Ext(path) == Ext {
 			return nil
 		}
 
@@ -62,14 +62,16 @@ func EncryptFile(ctx context.Context, f fs.FS, path string, recipients ...age.Re
 	}
 	file.Close()
 
-	f.RemoveAll(path)
+	if err = f.RemoveAll(path); err != nil {
+		return err
+	}
 
 	toWrite, err := Encrypt(ctx, read, recipients...)
 	if err != nil {
 		return err
 	}
 
-	agedPath := path + ageExt
+	agedPath := path + Ext
 
 	return fs.Create(f, agedPath, toWrite)
 }

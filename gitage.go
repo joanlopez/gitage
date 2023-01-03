@@ -1,5 +1,5 @@
 package gitage
 
 const (
-	ageExt = ".age"
+	Ext = ".age"
 )

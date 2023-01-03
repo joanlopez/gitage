@@ -32,11 +32,16 @@ func DecryptAll(ctx context.Context, f fs.FS, path string, identities ...age.Ide
 		}
 
 		// Skip non-encrypted files
-		if filepath.Ext(path) != ageExt {
+		if filepath.Ext(path) != Ext {
 			return nil
 		}
 
-		return DecryptFile(ctx, f, path, identities...)
+		err = DecryptFile(ctx, f, path, identities...)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
 }
 
@@ -62,16 +67,23 @@ func DecryptFile(ctx context.Context, f fs.FS, path string, identities ...age.Id
 	}
 	file.Close()
 
-	f.RemoveAll(path)
+	if err = f.RemoveAll(path); err != nil {
+		return err
+	}
 
 	toWrite, err := Decrypt(ctx, read, identities...)
 	if err != nil {
 		return err
 	}
 
-	path = path[:len(path)-len(ageExt)]
+	path = path[:len(path)-len(Ext)]
 
-	return fs.Create(f, path, toWrite)
+	err = fs.Create(f, path, toWrite)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Decrypt decrypts the given ciphertext using the given
