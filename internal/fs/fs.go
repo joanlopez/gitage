@@ -16,11 +16,11 @@ const cwd = "./"
 type FS afero.Fs
 
 func Mkdir(fs FS, path string) error {
-	return fs.MkdirAll(rootify(path), 0755)
+	return fs.MkdirAll(normalize(rootify(path)), 0755)
 }
 
 func Create(fs FS, path string, contents []byte) error {
-	f, err := fs.Create(rootify(path))
+	f, err := fs.Create(normalize(rootify(path)))
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func Create(fs FS, path string, contents []byte) error {
 }
 
 func Append(fs FS, path string, contents []byte) error {
-	f, err := fs.OpenFile(rootify(path), os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := fs.OpenFile(normalize(rootify(path)), os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func Append(fs FS, path string, contents []byte) error {
 }
 
 func Read(fs FS, path string) ([]byte, error) {
-	f, err := fs.Open(rootify(path))
+	f, err := fs.Open(normalize(rootify(path)))
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func ToArchive(fs FS) (*archive.Archive, error) {
 			return err
 		}
 
-		contents, err := afero.ReadFile(fs, path)
+		contents, err := afero.ReadFile(fs, normalize(path))
 		if err != nil {
 			return err
 		}
