@@ -62,7 +62,7 @@ func EncryptFile(ctx context.Context, f fs.FS, path string, recipients ...age.Re
 	}
 	file.Close()
 
-	if err = f.RemoveAll(path); err != nil {
+	if err = fs.RemoveAll(f, path); err != nil {
 		return err
 	}
 

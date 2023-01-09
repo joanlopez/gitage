@@ -59,6 +59,17 @@ func Read(fs FS, path string) ([]byte, error) {
 	return contents, f.Close()
 }
 
+func RemoveAll(fs FS, path string) error {
+	return fs.RemoveAll(normalize(path))
+}
+
+// For more context, look at these links:
+// - https://github.com/golang/go/issues/21782
+// - https://github.com/spf13/afero/pull/302/files
+func normalize(path string) string {
+	return normalizeLongPath(path)
+}
+
 func rootify(path string) string {
 	if strings.HasPrefix(path, root) || strings.HasPrefix(path, cwd) {
 		return path

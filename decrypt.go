@@ -67,7 +67,7 @@ func DecryptFile(ctx context.Context, f fs.FS, path string, identities ...age.Id
 	}
 	file.Close()
 
-	if err = f.RemoveAll(path); err != nil {
+	if err = fs.RemoveAll(f, path); err != nil {
 		return err
 	}
 
