@@ -10,13 +10,15 @@ import (
 	"github.com/joanlopez/gitage/internal/fs/archive"
 )
 
-const root = "/"
-const cwd = "./"
+const (
+	root = "/"
+	cwd  = "./"
+)
 
 type FS afero.Fs
 
 func Mkdir(fs FS, path string) error {
-	return fs.MkdirAll(normalize(rootify(path)), 0755)
+	return fs.MkdirAll(normalize(rootify(path)), 0o755)
 }
 
 func Create(fs FS, path string, contents []byte) error {
@@ -33,7 +35,7 @@ func Create(fs FS, path string, contents []byte) error {
 }
 
 func Append(fs FS, path string, contents []byte) error {
-	f, err := fs.OpenFile(normalize(rootify(path)), os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := fs.OpenFile(normalize(rootify(path)), os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}
@@ -80,7 +82,7 @@ func rootify(path string) string {
 func FromArchive(a *archive.Archive) (FS, error) {
 	fs := afero.NewMemMapFs()
 	for f := range a.Files() {
-		if err := afero.WriteFile(fs, f.Name, f.Data, 0644); err != nil {
+		if err := afero.WriteFile(fs, f.Name, f.Data, 0o644); err != nil {
 			return nil, err
 		}
 	}
@@ -103,7 +105,6 @@ func ToArchive(fs FS) (*archive.Archive, error) {
 		a.Add(archive.NewFile(path, contents))
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/spf13/cobra"
-	
+
 	"github.com/joanlopez/gitage"
 )
 

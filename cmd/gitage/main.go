@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/joanlopez/gitage/internal/log"
 	"os"
 
-	"github.com/joanlopez/gitage/cmd/gitage/bootstrap"
 	"github.com/spf13/afero"
+
+	"github.com/joanlopez/gitage/cmd/gitage/bootstrap"
+	"github.com/joanlopez/gitage/internal/log"
 )
 
 func main() {
