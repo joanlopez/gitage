@@ -20,6 +20,9 @@ import (
 // It skips directories (files are encrypted individually)
 // and encrypted files (files with the .age extension) to
 // avoid double encryption.
+//
+// Arguments:
+// - path: must be an absolute path.
 func EncryptAll(ctx context.Context, f fs.FS, path string, recipients ...age.Recipient) error {
 	return afero.Walk(f, path, func(path string, info stdfs.FileInfo, err error) error {
 		if err != nil {
@@ -50,6 +53,9 @@ func EncryptAll(ctx context.Context, f fs.FS, path string, recipients ...age.Rec
 // So, assuming it can be called with a non-transactional
 // file-system, use it with care. An unsuccessful operation
 // will leave the file-system in an inconsistent state.
+//
+// Arguments:
+// - path: must be an absolute path.
 func EncryptFile(ctx context.Context, f fs.FS, path string, recipients ...age.Recipient) error {
 	file, err := f.Open(path)
 	if err != nil {

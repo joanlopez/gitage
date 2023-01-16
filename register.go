@@ -10,6 +10,8 @@ import (
 	"github.com/joanlopez/gitage/internal/log"
 )
 
+// Register docs (TODO)
+// - path MUST be an absolute path.
 func Register(ctx context.Context, f fs.FS, path string, recipients ...string) error {
 	gitageDir := dir(path)
 	info, err := f.Stat(gitageDir)

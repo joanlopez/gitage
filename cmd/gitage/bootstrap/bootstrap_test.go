@@ -60,6 +60,7 @@ func Test(t *testing.T) {
 		{dir: "encrypt-multiple-files", args: []string{"encrypt", "-p", "/repo/data", "-r", "age1xkt49yr0y689x45qqrja6rgl0sne82gw5gt6mhhepa7xm7r6myfsd63983"}},
 
 		// ~/$ gitage decrypt
+		// TODO: decrypt with no identities flag should fail
 		{dir: "decrypt-multiple-files", args: []string{"decrypt", "-p", "/repo/data", "-i", "/repo/.gitage/identities"}},
 	}
 

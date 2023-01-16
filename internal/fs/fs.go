@@ -12,10 +12,14 @@ import (
 
 type FS afero.Fs
 
+// Mkdir docs (TODO)
+// - path MUST be an absolute path.
 func Mkdir(fs FS, path string) error {
 	return fs.MkdirAll(normalize(path), 0o755)
 }
 
+// Create docs (TODO)
+// - path MUST be an absolute path.
 func Create(fs FS, path string, contents []byte) error {
 	f, err := fs.Create(normalize(path))
 	if err != nil {
@@ -29,6 +33,8 @@ func Create(fs FS, path string, contents []byte) error {
 	return f.Close()
 }
 
+// Append docs (TODO)
+// - path MUST be an absolute path.
 func Append(fs FS, path string, contents []byte) error {
 	f, err := fs.OpenFile(normalize(path), os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
@@ -42,6 +48,8 @@ func Append(fs FS, path string, contents []byte) error {
 	return f.Close()
 }
 
+// Read docs (TODO)
+// - path MUST be an absolute path.
 func Read(fs FS, path string) ([]byte, error) {
 	f, err := fs.Open(normalize(path))
 	if err != nil {
@@ -56,6 +64,8 @@ func Read(fs FS, path string) ([]byte, error) {
 	return contents, f.Close()
 }
 
+// RemoveAll docs (TODO)
+// - path MUST be an absolute path.
 func RemoveAll(fs FS, path string) error {
 	return fs.RemoveAll(normalize(path))
 }
@@ -83,6 +93,12 @@ func ToArchive(fs FS) (*archive.Archive, error) {
 	err := afero.Walk(fs, "/", func(path string, info stdfs.FileInfo, err error) error {
 		if err != nil {
 			return err
+		}
+
+		// Skip directories,
+		// cause Archive only represents files.
+		if info.IsDir() {
+			return nil
 		}
 
 		contents, err := afero.ReadFile(fs, normalize(path))
