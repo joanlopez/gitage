@@ -269,5 +269,5 @@ func relPath(t *testing.T, root, path string) string {
 		return "/"
 	}
 
-	return path
+	return filepath.Clean(path)
 }

@@ -101,7 +101,7 @@ func ToArchive(fs FS) (*archive.Archive, error) {
 			return nil
 		}
 
-		contents, err := afero.ReadFile(fs, normalize(path))
+		contents, err := afero.ReadFile(fs, path)
 		if err != nil {
 			return err
 		}
