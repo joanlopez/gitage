@@ -13,31 +13,42 @@ import (
 
 func (c *CLI) decryptCmd() *cobra.Command {
 	if c.decrypt == nil {
-		c.decrypt = &cobra.Command{
-			Use:   "decrypt",
-			Short: "Decrypts files on the specified path",
-			Args:  cobra.ExactArgs(0),
-			RunE: func(cmd *cobra.Command, args []string) error {
-				rawIdentities, err := fs.Read(c.fs, c.identitiesPath)
-				if err != nil {
-					return err
-				}
+		c.decrypt = c.command(
+			"decrypt",
+			"Decrypts files on the specified path",
+			"",
+		)
 
-				identities, err := age.ParseIdentities(bytes.NewReader(rawIdentities))
-				if err != nil {
-					return err
-				}
+		// Set args
+		c.decrypt.Args = cobra.ExactArgs(0)
 
-				log.For(c.ctx).Println("Decrypting files...")
-				err = gitage.DecryptAll(c.ctx, c.fs, c.path, identities...)
-				if err != nil {
-					return err
-				}
+		// Set flags
+		c.decrypt.Flags().StringVarP(&c.identitiesPath, "identities", "i", "", "path to the identities file")
+		if err := c.decrypt.MarkFlagRequired("identities"); err != nil {
+			panic(err)
+		}
 
-				log.For(c.ctx).Println("Files decrypted with success!")
-
+		// Set run fn
+		c.decrypt.RunE = func(cmd *cobra.Command, args []string) error {
+			rawIdentities, err := fs.Read(c.fs, c.identitiesPath)
+			if err != nil {
 				return err
-			},
+			}
+
+			identities, err := age.ParseIdentities(bytes.NewReader(rawIdentities))
+			if err != nil {
+				return err
+			}
+
+			log.For(c.ctx).Println("Decrypting files...")
+			err = gitage.DecryptAll(c.ctx, c.fs, c.path, identities...)
+			if err != nil {
+				return err
+			}
+
+			log.For(c.ctx).Println("Files decrypted with success!")
+
+			return err
 		}
 	}
 

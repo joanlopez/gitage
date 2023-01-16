@@ -8,15 +8,22 @@ import (
 
 func (c *CLI) initCmd() *cobra.Command {
 	if c.init == nil {
-		c.init = &cobra.Command{
-			Use:   "init",
-			Short: "Initialize a new Gitage repository",
-			Long: `init is for initializing a new Gitage repository.
+		c.init = c.command(
+			"init",
+			"Initialize a new Gitage repository",
+			`init is for initializing a new Gitage repository.
 It creates the .gitage directory with the subsequent files.`,
-			Args: cobra.ExactArgs(0),
-			RunE: func(cmd *cobra.Command, args []string) error {
-				return gitage.Init(c.ctx, c.fs, c.path, c.recipients...)
-			},
+		)
+
+		// Set args
+		c.init.Args = cobra.ExactArgs(0)
+
+		// Set flags
+		c.init.Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
+
+		// Set run fn
+		c.init.RunE = func(cmd *cobra.Command, args []string) error {
+			return gitage.Init(c.ctx, c.fs, c.path, c.recipients...)
 		}
 	}
 

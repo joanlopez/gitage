@@ -18,6 +18,9 @@ type CLI struct {
 	recipients     []string
 	identitiesPath string
 
+	// Writer
+	writer log.Writer
+
 	// Commands
 	root       *cobra.Command
 	init       *cobra.Command
@@ -32,53 +35,18 @@ func New(ctx context.Context, fs fs.FS) *CLI {
 		ctx: ctx,
 		fs:  fs,
 
+		// Writer
+		writer: log.For(ctx),
+
 		// Flags
 		recipients: make([]string, 0),
 	}
 
-	// Writer for commands
-	writer := log.For(ctx)
-
-	// Root
-	c.rootCmd().SetOut(writer)
-	c.rootCmd().PersistentFlags().StringVarP(&c.path, "path", "p", "", "path to the repository")
 	c.rootCmd().AddCommand(c.initCmd())
 	c.rootCmd().AddCommand(c.registerCmd())
 	c.rootCmd().AddCommand(c.unregisterCmd())
 	c.rootCmd().AddCommand(c.encryptCmd())
 	c.rootCmd().AddCommand(c.decryptCmd())
-
-	// Init
-	c.initCmd().SetOut(writer)
-	c.initCmd().Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
-
-	// Register
-	c.registerCmd().SetOut(writer)
-	c.registerCmd().Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
-	if err := c.registerCmd().MarkFlagRequired("recipient"); err != nil {
-		panic(err)
-	}
-
-	// Unregister
-	c.unregisterCmd().SetOut(writer)
-	c.unregisterCmd().Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
-	if err := c.unregisterCmd().MarkFlagRequired("recipient"); err != nil {
-		panic(err)
-	}
-
-	// Encrypt
-	c.encryptCmd().SetOut(writer)
-	c.encryptCmd().Flags().StringArrayVarP(&c.recipients, "recipient", "r", nil, "recipients to encrypt the repository")
-	if err := c.encryptCmd().MarkFlagRequired("recipient"); err != nil {
-		panic(err)
-	}
-
-	// Decrypt
-	c.decryptCmd().SetOut(writer)
-	c.decryptCmd().Flags().StringVarP(&c.identitiesPath, "identities", "i", "", "path to the identities file")
-	if err := c.decryptCmd().MarkFlagRequired("identities"); err != nil {
-		panic(err)
-	}
 
 	return c
 }
