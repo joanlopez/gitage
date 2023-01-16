@@ -9,15 +9,15 @@ import (
 // windows cannot handle long relative paths, so convert to absolute paths by default
 func normalizeLongPath(path string) string {
 	// path is already normalized
-	if strings.HasPrefix(absolutePath, `\\?\`) {
-		return absolutePath
+	if strings.HasPrefix(path, `\\?\`) {
+		return path
 	}
 
 	// normalize "network path"
-	if strings.HasPrefix(absolutePath, `\\`) {
-		return `\\?\UNC\` + strings.TrimPrefix(absolutePath, `\\`)
+	if strings.HasPrefix(path, `\\`) {
+		return `\\?\UNC\` + strings.TrimPrefix(path, `\\`)
 	}
 
 	// normalize "local path"
-	return `\\?\` + absolutePath
+	return `\\?\` + path
 }
