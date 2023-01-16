@@ -28,6 +28,9 @@ func Test(t *testing.T) {
 		dir  string
 		args []string
 	}{
+		// ~/$ gitage
+		{dir: "no-cmd-no-args", args: []string{}},
+
 		// ~/$ gitage init
 		{dir: "init-empty-repo", args: []string{"init", "-p", "/repo"}},
 		{dir: "init-existing-repo", args: []string{"init", "-p", "/repo"}},

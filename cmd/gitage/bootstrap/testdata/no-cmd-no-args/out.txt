@@ -1,0 +1,20 @@
+Gitage is a CLI tool that can be used as a wrapper of Git CLI.
+It uses 'age' encryption tool to encrypt files before committing them to the repository.
+
+Usage:
+  gitage [command]
+
+Available Commands:
+  decrypt     Decrypts files on the specified path
+  encrypt     Encrypts files on the specified path
+  help        Help about any command
+  init        Initialize a new Gitage repository
+  register    Registers new recipient(s) to the repository
+  unregister  Unregisters recipient(s) from the repository
+
+Flags:
+  -h, --help          help for gitage
+  -p, --path string   path to the repository
+  -v, --version       version for gitage
+
+Use "gitage [command] --help" for more information about a command.
