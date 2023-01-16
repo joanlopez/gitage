@@ -1,28 +1,23 @@
 package fs
 
 import (
+	"fmt"
 	stdfs "io/fs"
 	"os"
-	"strings"
 
 	"github.com/spf13/afero"
 
 	"github.com/joanlopez/gitage/internal/fs/archive"
 )
 
-const (
-	root = "/"
-	cwd  = "./"
-)
-
 type FS afero.Fs
 
 func Mkdir(fs FS, path string) error {
-	return fs.MkdirAll(normalize(rootify(path)), 0o755)
+	return fs.MkdirAll(normalize(path), 0o755)
 }
 
 func Create(fs FS, path string, contents []byte) error {
-	f, err := fs.Create(normalize(rootify(path)))
+	f, err := fs.Create(normalize(path))
 	if err != nil {
 		return err
 	}
@@ -35,7 +30,7 @@ func Create(fs FS, path string, contents []byte) error {
 }
 
 func Append(fs FS, path string, contents []byte) error {
-	f, err := fs.OpenFile(normalize(rootify(path)), os.O_APPEND|os.O_WRONLY, 0o644)
+	f, err := fs.OpenFile(normalize(path), os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}
@@ -48,7 +43,7 @@ func Append(fs FS, path string, contents []byte) error {
 }
 
 func Read(fs FS, path string) ([]byte, error) {
-	f, err := fs.Open(normalize(rootify(path)))
+	f, err := fs.Open(normalize(path))
 	if err != nil {
 		return nil, err
 	}
@@ -70,13 +65,6 @@ func RemoveAll(fs FS, path string) error {
 // - https://github.com/spf13/afero/pull/302/files
 func normalize(path string) string {
 	return normalizeLongPath(path)
-}
-
-func rootify(path string) string {
-	if strings.HasPrefix(path, root) || strings.HasPrefix(path, cwd) {
-		return path
-	}
-	return root + path
 }
 
 func FromArchive(a *archive.Archive) (FS, error) {
@@ -106,7 +94,7 @@ func ToArchive(fs FS) (*archive.Archive, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot build archive for fs: %w", err)
 	}
 
 	return a, nil

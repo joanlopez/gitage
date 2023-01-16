@@ -28,6 +28,11 @@ func (c *CLI) decryptCmd() *cobra.Command {
 			panic(err)
 		}
 
+		// Set pre-run fn
+		c.decrypt.PreRunE = func(cmd *cobra.Command, args []string) error {
+			return c.fixPath("identities path (-i)", &c.identitiesPath)
+		}
+
 		// Set run fn
 		c.decrypt.RunE = func(cmd *cobra.Command, args []string) error {
 			rawIdentities, err := fs.Read(c.fs, c.identitiesPath)

@@ -11,11 +11,7 @@ import (
 )
 
 func Register(ctx context.Context, f fs.FS, path string, recipients ...string) error {
-	gitageDir, err := dir(path)
-	if err != nil {
-		return err
-	}
-
+	gitageDir := dir(path)
 	info, err := f.Stat(gitageDir)
 	if (err != nil && os.IsNotExist(err)) || !info.IsDir() {
 		log.For(ctx).Printf(`%s directory not found...

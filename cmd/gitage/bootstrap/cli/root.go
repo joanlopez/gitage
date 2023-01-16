@@ -1,6 +1,8 @@
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
 func (c *CLI) rootCmd() *cobra.Command {
 	if c.root == nil {
@@ -17,6 +19,11 @@ It uses 'age' encryption tool to encrypt files before committing them to the rep
 
 		// Set flags
 		c.root.PersistentFlags().StringVarP(&c.path, "path", "p", "", "path to the repository")
+
+		// Set persisted pre-run fn
+		c.root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+			return c.fixPath("path (-p)", &c.path)
+		}
 	}
 
 	return c.root

@@ -2,6 +2,10 @@ package cli
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -54,4 +58,26 @@ func New(ctx context.Context, fs fs.FS) *CLI {
 func (c *CLI) Execute(args ...string) error {
 	c.rootCmd().SetArgs(args)
 	return c.rootCmd().Execute()
+}
+
+var errCannotGetCWD = errors.New("unable to get current working directory")
+
+func (c *CLI) fixPath(id string, path *string) error {
+	var err error
+
+	if len(*path) == 0 {
+		*path, err = os.Getwd()
+		if err != nil {
+			return fmt.Errorf("no %s specified: %w: %s", id, errCannotGetCWD, err)
+		}
+	}
+
+	if !filepath.IsAbs(*path) {
+		*path, err = filepath.Abs(*path)
+		if err != nil {
+			return fmt.Errorf("%s must be absolute: %s", id, err)
+		}
+	}
+
+	return nil
 }

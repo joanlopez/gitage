@@ -88,23 +88,31 @@ func Test(t *testing.T) {
 	}
 }
 
-func fsForTestCase(t *testing.T, dir string) fs.FS {
+func fsForTestCase(t *testing.T, dirName string) fs.FS {
 	t.Helper()
 
-	info, err := os.Stat(fmt.Sprintf("./testdata/%s/init.txtar", dir))
+	const initFilePathFmt = "./testdata/%s/init.txtar"
+	initFilePath, err := filepath.Abs(fmt.Sprintf(initFilePathFmt, dirName))
+	require.NoError(t, err)
+
+	info, err := os.Stat(initFilePath)
 	if err == nil && !info.IsDir() {
-		return fsFromTxtarFile(t, dir, "init")
+		const filename = "init"
+		return fsFromTxtarFile(t, dirName, filename)
 	}
 
 	memFS := afero.NewMemMapFs()
 
-	root := fmt.Sprintf("./testdata/%s/init", dir)
-	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	const initDirPathFmt = "./testdata/%s/init"
+	initDirPath, err := filepath.Abs(fmt.Sprintf(initDirPathFmt, dirName))
+	require.NoError(t, err)
+
+	err = filepath.Walk(initDirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		relPath := relPath(t, root, path)
+		relPath := relPath(t, initDirPath, path)
 
 		if info.IsDir() {
 			return fs.Mkdir(memFS, relPath)
@@ -121,15 +129,20 @@ func fsForTestCase(t *testing.T, dir string) fs.FS {
 
 		return nil
 	})
+
 	require.NoError(t, err)
 
 	return memFS
 }
 
-func fsFromTxtarFile(t *testing.T, dir, file string) fs.FS {
+func fsFromTxtarFile(t *testing.T, dir, filename string) fs.FS {
 	t.Helper()
 
-	b, err := os.ReadFile(fmt.Sprintf("./testdata/%s/%s.txtar", dir, file))
+	const initFilePathFmt = "./testdata/%s/%s.txtar"
+	initFilePath, err := filepath.Abs(fmt.Sprintf(initFilePathFmt, dir, filename))
+	require.NoError(t, err)
+
+	b, err := os.ReadFile(initFilePath)
 	require.NoError(t, err)
 
 	f, err := fs.FromArchive(archive.Parse(b))
@@ -160,7 +173,11 @@ func newAsserter(t *testing.T, dir string, testFS fs.FS, testOut *bytes.Buffer) 
 	expectedArchive, err := fs.ToArchive(fsFromTxtarFile(t, dir, "expected"))
 	require.NoError(t, err)
 
-	b, err := os.ReadFile(fmt.Sprintf("./testdata/%s/out.txt", dir))
+	const outputFilePathFmt = "./testdata/%s/out.txt"
+	outFilePath, err := filepath.Abs(fmt.Sprintf(outputFilePathFmt, dir))
+	require.NoError(t, err)
+
+	b, err := os.ReadFile(outFilePath)
 	require.NoError(t, err)
 
 	return asserter{
@@ -220,7 +237,11 @@ func (a asserter) assertOutput() {
 func identitiesFromFile(t *testing.T, dir string) []age.Identity {
 	t.Helper()
 
-	f, err := os.Open(fmt.Sprintf("./testdata/%s/identities", dir))
+	const identitiesFilePathFmt = "./testdata/%s/identities"
+	identitiesFilePath, err := filepath.Abs(fmt.Sprintf(identitiesFilePathFmt, dir))
+	require.NoError(t, err)
+
+	f, err := os.Open(identitiesFilePath)
 	if err != nil && os.IsNotExist(err) {
 		return nil
 	}
@@ -242,12 +263,9 @@ func fileContents(t *testing.T, archive *archive.Archive, f *archive.File) []byt
 func relPath(t *testing.T, root, path string) string {
 	t.Helper()
 
-	if strings.HasPrefix(path, root) {
-		return strings.Replace(path, root, "/", 1)
-	}
-
-	if strings.HasPrefix(path, root[2:]) {
-		return strings.Replace(path, root[2:], "/", 1)
+	path = strings.Replace(path, root, "", 1)
+	if path == "" {
+		return "/"
 	}
 
 	return path
