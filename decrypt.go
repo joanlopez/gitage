@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 
 	"filippo.io/age"
-	"github.com/spf13/afero"
 
 	"github.com/joanlopez/gitage/internal/fs"
 )
@@ -24,7 +23,7 @@ import (
 // Arguments:
 // - path: must be an absolute path.
 func DecryptAll(ctx context.Context, f fs.FS, path string, identities ...age.Identity) error {
-	return afero.Walk(f, path, func(path string, info stdfs.FileInfo, err error) error {
+	return fs.Walk(f, path, func(path string, info stdfs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -67,7 +66,7 @@ func DecryptFile(ctx context.Context, f fs.FS, path string, identities ...age.Id
 		return err
 	}
 
-	read, err := afero.ReadAll(file)
+	read, err := fs.ReadAll(file)
 	if err != nil {
 		return err
 	}

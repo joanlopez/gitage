@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"filippo.io/age"
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -102,7 +101,7 @@ func fsForTestCase(t *testing.T, dirName string) fs.FS {
 		return fsFromTxtarFile(t, dirName, filename)
 	}
 
-	memFS := afero.NewMemMapFs()
+	memFS := fs.NewMemFS()
 
 	const initDirPathFmt = "./testdata/%s/init"
 	initDirPath, err := filepath.Abs(fmt.Sprintf(initDirPathFmt, dirName))
