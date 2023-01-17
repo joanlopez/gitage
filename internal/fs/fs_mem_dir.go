@@ -7,7 +7,9 @@ func RemoveFromMemDir(dir *MemFileData, f *MemFileData) {
 }
 
 func AddToMemDir(dir *MemFileData, f *MemFileData) {
-	dir.memDir.Add(f)
+	if f.name != dir.name {
+		dir.memDir.Add(f)
+	}
 }
 
 func InitializeDir(d *MemFileData) {

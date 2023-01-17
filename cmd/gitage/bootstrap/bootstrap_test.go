@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -101,38 +103,14 @@ func fsForTestCase(t *testing.T, dirName string) fs.Fs {
 		return fsFromTxtarFile(t, dirName, filename)
 	}
 
-	memFS := fs.NewMemFs()
-
 	const initDirPathFmt = "./testdata/%s/init"
 	initDirPath, err := filepath.Abs(fmt.Sprintf(initDirPathFmt, dirName))
 	require.NoError(t, err)
 
-	err = filepath.Walk(initDirPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		relPath := relPath(t, initDirPath, path)
-
-		if info.IsDir() {
-			return fs.Mkdir(memFS, relPath)
-		}
-
-		contents, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-
-		if err = fs.Create(memFS, relPath, contents); err != nil {
-			return err
-		}
-
-		return nil
-	})
-
+	memFs, err := fstest.FsFromPath(initDirPath)
 	require.NoError(t, err)
 
-	return memFS
+	return memFs
 }
 
 func fsFromTxtarFile(t *testing.T, dir, filename string) fs.Fs {
@@ -208,11 +186,11 @@ func (a asserter) assertFileTree() {
 		var gotData string
 		switch filepath.Ext(f.Name) {
 		case gitage.Ext:
-			decrypted, err := gitage.Decrypt(context.Background(), fileContents(a.t, a.testArchive, f), a.identities...)
+			decrypted, err := gitage.Decrypt(context.Background(), fstest.FileContents(a.testArchive, f), a.identities...)
 			assert.NoError(a.t, err, "Failed to decrypt file from test file system: %s", f.Name)
 			gotData = string(decrypted)
 		default:
-			gotData = string(fileContents(a.t, a.testArchive, f))
+			gotData = string(fstest.FileContents(a.testArchive, f))
 		}
 
 		assert.Equal(a.t, string(f.Data), gotData, "File content was not as expected: %s", f.Name)
@@ -228,7 +206,17 @@ func (a asserter) assertFileTree() {
 
 func (a asserter) assertOutput() {
 	a.t.Helper()
-	assert.Equal(a.t, a.expectedOut, a.testOut, "Execution output was not as expected")
+	expectedOut := a.expectedOut
+	if runtime.GOOS == "windows" {
+		expectedOut = strings.ReplaceAll(expectedOut, "\r\n", "\n")
+
+		r := regexp.MustCompile("\\/[a-zA-Z-_\\/.]+")
+		matches := r.FindAllString(expectedOut, -1)
+		for _, m := range matches {
+			expectedOut = strings.Replace(expectedOut, m, fstest.Rootify(m), 1)
+		}
+	}
+	assert.Equal(a.t, expectedOut, a.testOut, "Execution output was not as expected")
 }
 
 func identitiesFromFile(t *testing.T, dir string) []age.Identity {
@@ -248,22 +236,4 @@ func identitiesFromFile(t *testing.T, dir string) []age.Identity {
 	require.NoError(t, err)
 
 	return identities
-}
-
-func fileContents(t *testing.T, archive *fstest.Archive, f *fstest.File) []byte {
-	t.Helper()
-	file := archive.Get(f.Name)
-	require.NotNil(t, file, "File not found in archive: %s", f.Name)
-	return file.Data
-}
-
-func relPath(t *testing.T, root, path string) string {
-	t.Helper()
-
-	path = strings.Replace(path, root, "", 1)
-	if path == "" {
-		return "/"
-	}
-
-	return filepath.Clean(path)
 }

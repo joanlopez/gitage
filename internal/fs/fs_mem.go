@@ -28,11 +28,6 @@ func NewMemFs() Fs {
 func (m *MemFs) getData() map[string]*MemFileData {
 	m.init.Do(func() {
 		m.data = make(map[string]*MemFileData)
-		// Root should always exist, right?
-		// TODO: what about windows?
-		root := CreateDir(string(os.PathSeparator))
-		SetMode(root, os.ModeDir|0o755)
-		m.data[string(os.PathSeparator)] = root
 	})
 	return m.data
 }
