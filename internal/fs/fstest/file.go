@@ -1,4 +1,4 @@
-package archive
+package fstest
 
 import (
 	"golang.org/x/tools/txtar"

@@ -22,7 +22,7 @@ import (
 //
 // Arguments:
 // - path: must be an absolute path.
-func DecryptAll(ctx context.Context, f fs.FS, path string, identities ...age.Identity) error {
+func DecryptAll(ctx context.Context, f fs.Fs, path string, identities ...age.Identity) error {
 	return fs.Walk(f, path, func(path string, info stdfs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -60,7 +60,7 @@ func DecryptAll(ctx context.Context, f fs.FS, path string, identities ...age.Ide
 //
 // Arguments:
 // - path: must be an absolute path.
-func DecryptFile(ctx context.Context, f fs.FS, path string, identities ...age.Identity) error {
+func DecryptFile(ctx context.Context, f fs.Fs, path string, identities ...age.Identity) error {
 	file, err := f.Open(path)
 	if err != nil {
 		return err

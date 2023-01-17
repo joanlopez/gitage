@@ -8,7 +8,7 @@ import (
 	"github.com/joanlopez/gitage/internal/log"
 )
 
-func Run(ctx context.Context, fs fs.FS, args ...string) {
+func Run(ctx context.Context, fs fs.Fs, args ...string) {
 	// Then we initialize a CLI with the given fs and out
 	app := cli.New(ctx, fs)
 

@@ -2,17 +2,13 @@ package fs
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	stdfs "io/fs"
 	"os"
 	"path/filepath"
 	"sort"
-
-	"github.com/joanlopez/gitage/internal/fs/archive"
 )
 
-type FS interface {
+type Fs interface {
 	// Create creates a file in the filesystem, returning the file and an error, if any happens.
 	Create(name string) (File, error)
 
@@ -44,13 +40,13 @@ type FS interface {
 
 // Mkdir docs (TODO)
 // - path MUST be an absolute path.
-func Mkdir(fs FS, path string) error {
+func Mkdir(fs Fs, path string) error {
 	return fs.MkdirAll(normalize(path), 0o755)
 }
 
 // Create docs (TODO)
 // - path MUST be an absolute path.
-func Create(fs FS, path string, contents []byte) error {
+func Create(fs Fs, path string, contents []byte) error {
 	f, err := fs.Create(normalize(path))
 	if err != nil {
 		return err
@@ -65,7 +61,7 @@ func Create(fs FS, path string, contents []byte) error {
 
 // Append docs (TODO)
 // - path MUST be an absolute path.
-func Append(fs FS, path string, contents []byte) error {
+func Append(fs Fs, path string, contents []byte) error {
 	f, err := fs.OpenFile(normalize(path), os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
@@ -80,7 +76,7 @@ func Append(fs FS, path string, contents []byte) error {
 
 // Read docs (TODO)
 // - path MUST be an absolute path.
-func Read(fs FS, path string) ([]byte, error) {
+func Read(fs Fs, path string) ([]byte, error) {
 	f, err := fs.Open(normalize(path))
 	if err != nil {
 		return nil, err
@@ -98,7 +94,7 @@ func ReadAll(r io.Reader) ([]byte, error) {
 	return readAll(r, bytes.MinRead)
 }
 
-func ReadFile(fs FS, filename string) ([]byte, error) {
+func ReadFile(fs Fs, filename string) ([]byte, error) {
 	f, err := fs.Open(filename)
 	if err != nil {
 		return nil, err
@@ -124,11 +120,11 @@ func ReadFile(fs FS, filename string) ([]byte, error) {
 
 // RemoveAll docs (TODO)
 // - path MUST be an absolute path.
-func RemoveAll(fs FS, path string) error {
+func RemoveAll(fs Fs, path string) error {
 	return fs.RemoveAll(normalize(path))
 }
 
-func WriteFile(fs FS, filename string, data []byte, perm os.FileMode) error {
+func WriteFile(fs Fs, filename string, data []byte, perm os.FileMode) error {
 	f, err := fs.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
 	if err != nil {
 		return err
@@ -147,46 +143,11 @@ func WriteFile(fs FS, filename string, data []byte, perm os.FileMode) error {
 // - https://github.com/golang/go/issues/21782
 // - https://github.com/spf13/afero/pull/302/files
 func normalize(path string) string {
+	const longPath = 180
+	if len(path) < longPath {
+		return path
+	}
 	return normalizeLongPath(path)
-}
-
-func FromArchive(a *archive.Archive) (FS, error) {
-	fs := NewMemFS()
-	for f := range a.Files() {
-		if err := WriteFile(fs, f.Name, f.Data, 0o644); err != nil {
-			return nil, err
-		}
-	}
-
-	return fs, nil
-}
-
-func ToArchive(fs FS) (*archive.Archive, error) {
-	a := archive.Empty()
-	err := Walk(fs, "/", func(path string, info stdfs.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Skip directories,
-		// cause Archive only represents files.
-		if info.IsDir() {
-			return nil
-		}
-
-		contents, err := ReadFile(fs, path)
-		if err != nil {
-			return err
-		}
-
-		a.Add(archive.NewFile(path, contents))
-		return nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("cannot build archive for fs: %w", err)
-	}
-
-	return a, nil
 }
 
 func readAll(r io.Reader, capacity int64) (b []byte, err error) {
@@ -208,7 +169,7 @@ func readAll(r io.Reader, capacity int64) (b []byte, err error) {
 	return buf.Bytes(), err
 }
 
-func Walk(fs FS, root string, walkFn filepath.WalkFunc) error {
+func Walk(fs Fs, root string, walkFn filepath.WalkFunc) error {
 	info, err := fs.Lstat(root)
 	if err != nil {
 		return walkFn(root, nil, err)
@@ -216,7 +177,7 @@ func Walk(fs FS, root string, walkFn filepath.WalkFunc) error {
 	return walk(fs, root, info, walkFn)
 }
 
-func walk(fs FS, path string, info os.FileInfo, walkFn filepath.WalkFunc) error {
+func walk(fs Fs, path string, info os.FileInfo, walkFn filepath.WalkFunc) error {
 	err := walkFn(path, info, nil)
 	if err != nil {
 		if info.IsDir() && err == filepath.SkipDir {
@@ -253,7 +214,7 @@ func walk(fs FS, path string, info os.FileInfo, walkFn filepath.WalkFunc) error 
 	return nil
 }
 
-func readDirNames(fs FS, dirname string) ([]string, error) {
+func readDirNames(fs Fs, dirname string) ([]string, error) {
 	f, err := fs.Open(dirname)
 	if err != nil {
 		return nil, err

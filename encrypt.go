@@ -22,7 +22,7 @@ import (
 //
 // Arguments:
 // - path: must be an absolute path.
-func EncryptAll(ctx context.Context, f fs.FS, path string, recipients ...age.Recipient) error {
+func EncryptAll(ctx context.Context, f fs.Fs, path string, recipients ...age.Recipient) error {
 	return fs.Walk(f, path, func(path string, info stdfs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -55,7 +55,7 @@ func EncryptAll(ctx context.Context, f fs.FS, path string, recipients ...age.Rec
 //
 // Arguments:
 // - path: must be an absolute path.
-func EncryptFile(ctx context.Context, f fs.FS, path string, recipients ...age.Recipient) error {
+func EncryptFile(ctx context.Context, f fs.Fs, path string, recipients ...age.Recipient) error {
 	file, err := f.Open(path)
 	if err != nil {
 		return err

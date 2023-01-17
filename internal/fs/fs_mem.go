@@ -13,19 +13,19 @@ import (
 // Only a subset of bits is allowed to be changed. Documented under os.Chmod().
 const chmodBits = os.ModePerm | os.ModeSetuid | os.ModeSetgid | os.ModeSticky
 
-var _ FS = &MemFS{}
+var _ Fs = &MemFs{}
 
-type MemFS struct {
+type MemFs struct {
 	mu   sync.RWMutex
 	data map[string]*MemFileData
 	init sync.Once
 }
 
-func NewMemFS() FS {
-	return &MemFS{}
+func NewMemFs() Fs {
+	return &MemFs{}
 }
 
-func (m *MemFS) getData() map[string]*MemFileData {
+func (m *MemFs) getData() map[string]*MemFileData {
 	m.init.Do(func() {
 		m.data = make(map[string]*MemFileData)
 		// Root should always exist, right?
@@ -37,7 +37,7 @@ func (m *MemFS) getData() map[string]*MemFileData {
 	return m.data
 }
 
-func (m *MemFS) Create(name string) (File, error) {
+func (m *MemFs) Create(name string) (File, error) {
 	name = normalizePath(name)
 	m.mu.Lock()
 	file := CreateFile(name)
@@ -47,7 +47,7 @@ func (m *MemFS) Create(name string) (File, error) {
 	return NewFileHandle(file), nil
 }
 
-func (m *MemFS) unRegisterWithParent(fileName string) error {
+func (m *MemFs) unRegisterWithParent(fileName string) error {
 	f, err := m.lockFreeOpen(fileName)
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func (m *MemFS) unRegisterWithParent(fileName string) error {
 	return nil
 }
 
-func (m *MemFS) findParent(f *MemFileData) *MemFileData {
+func (m *MemFs) findParent(f *MemFileData) *MemFileData {
 	parentDir, _ := filepath.Split(f.Name())
 	parentDir = filepath.Clean(parentDir)
 	parentFile, err := m.lockFreeOpen(parentDir)
@@ -73,7 +73,7 @@ func (m *MemFS) findParent(f *MemFileData) *MemFileData {
 	return parentFile
 }
 
-func (m *MemFS) registerWithParent(f *MemFileData, perm os.FileMode) {
+func (m *MemFs) registerWithParent(f *MemFileData, perm os.FileMode) {
 	if f == nil {
 		return
 	}
@@ -96,7 +96,7 @@ func (m *MemFS) registerWithParent(f *MemFileData, perm os.FileMode) {
 	parent.Unlock()
 }
 
-func (m *MemFS) lockFreeMkdir(name string, perm os.FileMode) error {
+func (m *MemFs) lockFreeMkdir(name string, perm os.FileMode) error {
 	name = normalizePath(name)
 	x, ok := m.getData()[name]
 	if ok {
@@ -114,7 +114,7 @@ func (m *MemFS) lockFreeMkdir(name string, perm os.FileMode) error {
 	return nil
 }
 
-func (m *MemFS) Mkdir(name string, perm os.FileMode) error {
+func (m *MemFs) Mkdir(name string, perm os.FileMode) error {
 	perm &= chmodBits
 	name = normalizePath(name)
 
@@ -140,10 +140,10 @@ func (m *MemFS) Mkdir(name string, perm os.FileMode) error {
 	return m.setFileMode(name, perm|os.ModeDir)
 }
 
-func (m *MemFS) MkdirAll(path string, perm os.FileMode) error {
+func (m *MemFs) MkdirAll(path string, perm os.FileMode) error {
 	err := m.Mkdir(path, perm)
 	if err != nil {
-		// nolint: forcetypeassert
+		//nolint: forcetypeassert
 		if err.(*os.PathError).Err == ErrFileExists {
 			return nil
 		}
@@ -166,7 +166,7 @@ func normalizePath(path string) string {
 	}
 }
 
-func (m *MemFS) Open(name string) (File, error) {
+func (m *MemFs) Open(name string) (File, error) {
 	f, err := m.open(name)
 	if f != nil {
 		return NewReadOnlyFileHandle(f), err
@@ -174,7 +174,7 @@ func (m *MemFS) Open(name string) (File, error) {
 	return nil, err
 }
 
-func (m *MemFS) openWrite(name string) (File, error) {
+func (m *MemFs) openWrite(name string) (File, error) {
 	f, err := m.open(name)
 	if f != nil {
 		return NewFileHandle(f), err
@@ -182,7 +182,7 @@ func (m *MemFS) openWrite(name string) (File, error) {
 	return nil, err
 }
 
-func (m *MemFS) open(name string) (*MemFileData, error) {
+func (m *MemFs) open(name string) (*MemFileData, error) {
 	name = normalizePath(name)
 
 	m.mu.RLock()
@@ -194,7 +194,7 @@ func (m *MemFS) open(name string) (*MemFileData, error) {
 	return f, nil
 }
 
-func (m *MemFS) lockFreeOpen(name string) (*MemFileData, error) {
+func (m *MemFs) lockFreeOpen(name string) (*MemFileData, error) {
 	name = normalizePath(name)
 	f, ok := m.getData()[name]
 	if ok {
@@ -203,7 +203,7 @@ func (m *MemFS) lockFreeOpen(name string) (*MemFileData, error) {
 	return nil, ErrFileNotFound
 }
 
-func (m *MemFS) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
+func (m *MemFs) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
 	perm &= chmodBits
 	chmod := false
 	file, err := m.openWrite(name)
@@ -218,7 +218,7 @@ func (m *MemFS) OpenFile(name string, flag int, perm os.FileMode) (File, error) 
 		return nil, err
 	}
 	if flag == os.O_RDONLY {
-		// nolint: forcetypeassert
+		//nolint: forcetypeassert
 		file = NewReadOnlyFileHandle(file.(*MemFile).Data())
 	}
 	if flag&os.O_APPEND > 0 {
@@ -231,7 +231,7 @@ func (m *MemFS) OpenFile(name string, flag int, perm os.FileMode) (File, error) 
 		}
 	}
 	if flag&os.O_TRUNC > 0 && flag&(os.O_RDWR|os.O_WRONLY) > 0 {
-		// nolint: forcetypeassert
+		//nolint: forcetypeassert
 		err = file.(*MemFile).Truncate(0)
 		if err != nil {
 			if closeErr := file.Close(); closeErr != nil {
@@ -246,7 +246,7 @@ func (m *MemFS) OpenFile(name string, flag int, perm os.FileMode) (File, error) 
 	return file, nil
 }
 
-func (m *MemFS) Remove(name string) error {
+func (m *MemFs) Remove(name string) error {
 	name = normalizePath(name)
 
 	m.mu.Lock()
@@ -264,7 +264,7 @@ func (m *MemFS) Remove(name string) error {
 	return nil
 }
 
-func (m *MemFS) RemoveAll(path string) error {
+func (m *MemFs) RemoveAll(path string) error {
 	path = normalizePath(path)
 	m.mu.Lock()
 	_ = m.unRegisterWithParent(path)
@@ -285,20 +285,20 @@ func (m *MemFS) RemoveAll(path string) error {
 	return nil
 }
 
-func (m *MemFS) Lstat(name string) (os.FileInfo, error) {
+func (m *MemFs) Lstat(name string) (os.FileInfo, error) {
 	return m.Stat(name)
 }
 
-func (m *MemFS) Stat(name string) (os.FileInfo, error) {
+func (m *MemFs) Stat(name string) (os.FileInfo, error) {
 	f, err := m.Open(name)
 	if err != nil {
 		return nil, err
 	}
-	fi := GetFileInfo(f.(*MemFile).Data())
+	fi := GetFileInfo(f.(*MemFile).Data()) //nolint: forcetypeassert
 	return fi, nil
 }
 
-func (m *MemFS) setFileMode(name string, mode os.FileMode) error {
+func (m *MemFs) setFileMode(name string, mode os.FileMode) error {
 	name = normalizePath(name)
 
 	m.mu.RLock()

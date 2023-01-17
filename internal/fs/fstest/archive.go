@@ -1,6 +1,9 @@
-package archive
+package fstest
 
 import (
+	"runtime"
+	"strings"
+
 	"golang.org/x/tools/txtar"
 )
 
@@ -9,13 +12,19 @@ type Archive struct {
 	inner *txtar.Archive
 }
 
-func Empty() *Archive {
+func EmptyArchive() *Archive {
 	a := new(Archive)
 	a.init()
 	return a
 }
 
-func Parse(data []byte) *Archive {
+func ParseArchive(data []byte) *Archive {
+	// Support for Windows line endings.
+	// Otherwise, the 'txtar' package won't parse it correctly.
+	if runtime.GOOS == "windows" {
+		data = []byte(strings.ReplaceAll(string(data), "\r\n", "\n"))
+	}
+
 	inner := txtar.Parse(data)
 	ref := make(map[string]*txtar.File, len(inner.Files))
 	for i := range inner.Files {

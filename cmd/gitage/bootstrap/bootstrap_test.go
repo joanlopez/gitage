@@ -16,7 +16,7 @@ import (
 	"github.com/joanlopez/gitage"
 	"github.com/joanlopez/gitage/cmd/gitage/bootstrap"
 	"github.com/joanlopez/gitage/internal/fs"
-	"github.com/joanlopez/gitage/internal/fs/archive"
+	"github.com/joanlopez/gitage/internal/fs/fstest"
 	"github.com/joanlopez/gitage/internal/log"
 )
 
@@ -88,7 +88,7 @@ func Test(t *testing.T) {
 	}
 }
 
-func fsForTestCase(t *testing.T, dirName string) fs.FS {
+func fsForTestCase(t *testing.T, dirName string) fs.Fs {
 	t.Helper()
 
 	const initFilePathFmt = "./testdata/%s/init.txtar"
@@ -101,7 +101,7 @@ func fsForTestCase(t *testing.T, dirName string) fs.FS {
 		return fsFromTxtarFile(t, dirName, filename)
 	}
 
-	memFS := fs.NewMemFS()
+	memFS := fs.NewMemFs()
 
 	const initDirPathFmt = "./testdata/%s/init"
 	initDirPath, err := filepath.Abs(fmt.Sprintf(initDirPathFmt, dirName))
@@ -135,17 +135,14 @@ func fsForTestCase(t *testing.T, dirName string) fs.FS {
 	return memFS
 }
 
-func fsFromTxtarFile(t *testing.T, dir, filename string) fs.FS {
+func fsFromTxtarFile(t *testing.T, dir, filename string) fs.Fs {
 	t.Helper()
 
 	const initFilePathFmt = "./testdata/%s/%s.txtar"
 	initFilePath, err := filepath.Abs(fmt.Sprintf(initFilePathFmt, dir, filename))
 	require.NoError(t, err)
 
-	b, err := os.ReadFile(initFilePath)
-	require.NoError(t, err)
-
-	f, err := fs.FromArchive(archive.Parse(b))
+	f, err := fstest.FsFromTxtarFile(initFilePath)
 	require.NoError(t, err)
 
 	return f
@@ -155,22 +152,22 @@ type asserter struct {
 	t   *testing.T
 	dir string
 
-	testArchive *archive.Archive
+	testArchive *fstest.Archive
 	testOut     string
 
-	expectedArchive *archive.Archive
+	expectedArchive *fstest.Archive
 	expectedOut     string
 
 	identities []age.Identity
 }
 
-func newAsserter(t *testing.T, dir string, testFS fs.FS, testOut *bytes.Buffer) asserter {
+func newAsserter(t *testing.T, dir string, testFS fs.Fs, testOut *bytes.Buffer) asserter {
 	t.Helper()
 
-	testArchive, err := fs.ToArchive(testFS)
+	testArchive, err := fstest.FsToArchive(testFS)
 	require.NoError(t, err)
 
-	expectedArchive, err := fs.ToArchive(fsFromTxtarFile(t, dir, "expected"))
+	expectedArchive, err := fstest.FsToArchive(fsFromTxtarFile(t, dir, "expected"))
 	require.NoError(t, err)
 
 	const outputFilePathFmt = "./testdata/%s/out.txt"
@@ -253,7 +250,7 @@ func identitiesFromFile(t *testing.T, dir string) []age.Identity {
 	return identities
 }
 
-func fileContents(t *testing.T, archive *archive.Archive, f *archive.File) []byte {
+func fileContents(t *testing.T, archive *fstest.Archive, f *fstest.File) []byte {
 	t.Helper()
 	file := archive.Get(f.Name)
 	require.NotNil(t, file, "File not found in archive: %s", f.Name)

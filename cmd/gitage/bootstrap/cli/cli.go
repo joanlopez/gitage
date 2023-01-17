@@ -15,7 +15,7 @@ import (
 
 type CLI struct {
 	ctx context.Context
-	fs  fs.FS
+	fs  fs.Fs
 
 	// Flags
 	path           string
@@ -34,7 +34,7 @@ type CLI struct {
 	decrypt    *cobra.Command
 }
 
-func New(ctx context.Context, fs fs.FS) *CLI {
+func New(ctx context.Context, fs fs.Fs) *CLI {
 	c := &CLI{
 		ctx: ctx,
 		fs:  fs,
