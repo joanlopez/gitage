@@ -1,0 +1,11 @@
+Usage:
+  gitage encrypt [flags]
+
+Flags:
+  -h, --help                    help for encrypt
+  -r, --recipient stringArray   recipients to encrypt the repository
+
+Global Flags:
+  -p, --path string   path to the repository
+
+Error: required flag(s) "recipient" not set

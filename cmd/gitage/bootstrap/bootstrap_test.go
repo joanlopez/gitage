@@ -58,10 +58,11 @@ func Test(t *testing.T) {
 		{dir: "unregister-last-recipient", args: []string{"unregister", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
 
 		// ~/$ gitage encrypt
+		{dir: "encrypt-no-recipients", args: []string{"encrypt", "-p", "/repo/data"}},
 		{dir: "encrypt-multiple-files", args: []string{"encrypt", "-p", "/repo/data", "-r", "age1xkt49yr0y689x45qqrja6rgl0sne82gw5gt6mhhepa7xm7r6myfsd63983"}},
 
 		// ~/$ gitage decrypt
-		// TODO: decrypt with no identities flag should fail
+		{dir: "decrypt-no-identities", args: []string{"decrypt", "-p", "/repo/data"}},
 		{dir: "decrypt-multiple-files", args: []string{"decrypt", "-p", "/repo/data", "-i", "/repo/.gitage/identities"}},
 	}
 

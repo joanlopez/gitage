@@ -1,0 +1,11 @@
+Usage:
+  gitage decrypt [flags]
+
+Flags:
+  -h, --help                help for decrypt
+  -i, --identities string   path to the identities file
+
+Global Flags:
+  -p, --path string   path to the repository
+
+Error: required flag(s) "identities" not set
