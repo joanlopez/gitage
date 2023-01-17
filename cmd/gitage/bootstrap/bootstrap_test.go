@@ -210,7 +210,7 @@ func (a asserter) assertOutput() {
 	if runtime.GOOS == "windows" {
 		expectedOut = strings.ReplaceAll(expectedOut, "\r\n", "\n")
 
-		r := regexp.MustCompile("\\/[a-zA-Z-_\\/.]+")
+		r := regexp.MustCompile(`\/[a-zA-Z-_\/.]+`)
 		matches := r.FindAllString(expectedOut, -1)
 		for _, m := range matches {
 			expectedOut = strings.Replace(expectedOut, m, fstest.Rootify(m), 1)

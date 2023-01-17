@@ -2,12 +2,13 @@ package fstest
 
 import (
 	"fmt"
-	"github.com/joanlopez/gitage/internal/fs"
 	stdfs "io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/joanlopez/gitage/internal/fs"
 )
 
 const pathSepStr = string(os.PathSeparator)
@@ -85,7 +86,6 @@ func FsFromPath(fsPath string) (fs.Fs, error) {
 
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
