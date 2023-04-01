@@ -13,6 +13,7 @@ import (
 
 	"filippo.io/age"
 	"github.com/go-git/go-billy/v5"
+	"github.com/go-git/go-git/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -85,7 +86,7 @@ func Test(t *testing.T) {
 			// Assert the results
 			ass := newAsserter(t, tc.dir, f, out)
 			ass.assertOutput()
-			ass.assertFileTree()
+			ass.assertFileTree(true)
 		})
 	}
 }
@@ -169,7 +170,7 @@ func newAsserter(t *testing.T, dir string, testFS billy.Filesystem, testOut *byt
 	}
 }
 
-func (a asserter) assertFileTree() {
+func (a asserter) assertFileTree(skipDotGit bool) {
 	a.t.Helper()
 
 	// We do use a map of booleans to check which paths
@@ -199,6 +200,10 @@ func (a asserter) assertFileTree() {
 	// All got files should have been visited already (expected).
 	// Otherwise, we have a file that was not expected.
 	for f := range a.testArchive.Files() {
+		if skipDotGit && strings.Contains(f.Name, git.GitDirName) {
+			continue
+		}
+
 		_, visited := visited[f.Name]
 		assert.True(a.t, visited, "File from test file system was not expected: %s", f.Name)
 	}

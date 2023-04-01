@@ -18,8 +18,7 @@ func Register(ctx context.Context, f billy.Filesystem, path string, recipients .
 	gitageDir := dir(path)
 	info, err := f.Stat(gitageDir)
 	if (err != nil && os.IsNotExist(err)) || !info.IsDir() {
-		log.For(ctx).Printf(`%s directory not found...
-Are you in a Gitage repository?`, gitageDir)
+		log.For(ctx).Printf("%s directory not found...\nAre you in a Gitage repository?\n", gitageDir)
 		return nil
 	}
 
@@ -27,8 +26,7 @@ Are you in a Gitage repository?`, gitageDir)
 
 	info, err = f.Stat(recipientsFilepath)
 	if (err != nil && os.IsNotExist(err)) || info.IsDir() {
-		log.For(ctx).Printf(`%s file not found...
-Are you in a Gitage repository?`, gitageDir)
+		log.For(ctx).Printf("%s file not found...\nAre you in a Gitage repository?\n", gitageDir)
 		return nil
 	}
 
