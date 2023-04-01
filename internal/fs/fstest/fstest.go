@@ -8,15 +8,26 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/go-git/go-billy/v5"
+	"github.com/go-git/go-billy/v5/memfs"
+
 	"github.com/joanlopez/gitage/internal/fs"
 )
 
 const pathSepStr = string(os.PathSeparator)
 
-func FsFromArchive(a *Archive) (fs.Fs, error) {
-	memFs := fs.NewMemFs()
+func FsFromArchive(a *Archive) (billy.Filesystem, error) {
+	memFs := memfs.New()
 	for f := range a.Files() {
 		fName := Rootify(f.Name)
+
+		if strings.HasSuffix(fName, "/") {
+			if err := fs.Mkdir(memFs, fName); err != nil {
+				return nil, err
+			}
+			continue
+		}
+
 		if err := fs.WriteFile(memFs, fName, f.Data, 0o644); err != nil {
 			return nil, err
 		}
@@ -25,16 +36,19 @@ func FsFromArchive(a *Archive) (fs.Fs, error) {
 	return memFs, nil
 }
 
-func FsToArchive(f fs.Fs) (*Archive, error) {
+func FsToArchive(f billy.Filesystem) (*Archive, error) {
 	a := EmptyArchive()
 	err := fs.Walk(f, rootDir(), func(path string, info stdfs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		contents, err := fs.ReadFile(f, path)
-		if err != nil {
-			return err
+		contents := make([]byte, 0)
+		if !info.IsDir() {
+			contents, err = fs.Read(f, path)
+			if err != nil {
+				return err
+			}
 		}
 
 		a.Add(NewFile(path, contents))
@@ -47,7 +61,7 @@ func FsToArchive(f fs.Fs) (*Archive, error) {
 	return a, nil
 }
 
-func FsFromTxtarFile(pathToFile string) (fs.Fs, error) {
+func FsFromTxtarFile(pathToFile string) (billy.Filesystem, error) {
 	b, err := os.ReadFile(pathToFile)
 	if err != nil {
 		return nil, err
@@ -61,8 +75,8 @@ func FsFromTxtarFile(pathToFile string) (fs.Fs, error) {
 	return f, nil
 }
 
-func FsFromPath(fsPath string) (fs.Fs, error) {
-	memFs := fs.NewMemFs()
+func FsFromPath(fsPath string) (billy.Filesystem, error) {
+	memFs := memfs.New()
 
 	err := filepath.Walk(fsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

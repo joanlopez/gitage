@@ -11,6 +11,6 @@ It uses [`age`](https://github.com/FiloSottile/age) encryption tool to encrypt f
 
 This project relies on [age](https://github.com/FiloSottile/age), thanks to [Filippo Valsorda](https://github.com/FiloSottile).
 
-The file-system abstraction used in this project is a subset of [afero](https://github.com/spf13/afero), mainly focused
-on "in-memory" and "os" implementations, and adapted for convenience, thanks to [Steve Francia](https://github.com/spf13).
+It also relies on [go-git](https://github.com/go-git/go-git) and its file-system abstraction [billy](https://github.com/go-git/go-billy),
+so thanks to their contributors as well.
 

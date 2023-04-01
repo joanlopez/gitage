@@ -12,12 +12,12 @@ import (
 	"testing"
 
 	"filippo.io/age"
+	"github.com/go-git/go-billy/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/joanlopez/gitage"
 	"github.com/joanlopez/gitage/cmd/gitage/bootstrap"
-	"github.com/joanlopez/gitage/internal/fs"
 	"github.com/joanlopez/gitage/internal/fs/fstest"
 	"github.com/joanlopez/gitage/internal/log"
 )
@@ -55,7 +55,6 @@ func Test(t *testing.T) {
 		{dir: "unregister-single-recipient", args: []string{"unregister", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg"}},
 		{dir: "unregister-multiple-recipients", args: []string{"unregister", "-p", "/repo", "-r", "age1lggyhqrw2nlhcxprm67z43rta597azn8gknawjehu9d9dl0jq3yqqvfafg", "-r", "age1yhm4gctwfmrpz87tdslm550wrx6m79y9f2hdzt0lndjnehwj0ukqrjpyx5"}},
 		{dir: "unregister-last-recipient", args: []string{"unregister", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
-		{dir: "unregister-last-recipient", args: []string{"unregister", "-p", "/repo", "-r", "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p"}},
 
 		// ~/$ gitage encrypt
 		{dir: "encrypt-no-recipients", args: []string{"encrypt", "-p", "/repo/data"}},
@@ -91,7 +90,7 @@ func Test(t *testing.T) {
 	}
 }
 
-func fsForTestCase(t *testing.T, dirName string) fs.Fs {
+func fsForTestCase(t *testing.T, dirName string) billy.Filesystem {
 	t.Helper()
 
 	const initFilePathFmt = "./testdata/%s/init.txtar"
@@ -114,7 +113,7 @@ func fsForTestCase(t *testing.T, dirName string) fs.Fs {
 	return memFs
 }
 
-func fsFromTxtarFile(t *testing.T, dir, filename string) fs.Fs {
+func fsFromTxtarFile(t *testing.T, dir, filename string) billy.Filesystem {
 	t.Helper()
 
 	const initFilePathFmt = "./testdata/%s/%s.txtar"
@@ -140,7 +139,7 @@ type asserter struct {
 	identities []age.Identity
 }
 
-func newAsserter(t *testing.T, dir string, testFS fs.Fs, testOut *bytes.Buffer) asserter {
+func newAsserter(t *testing.T, dir string, testFS billy.Filesystem, testOut *bytes.Buffer) asserter {
 	t.Helper()
 
 	testArchive, err := fstest.FsToArchive(testFS)

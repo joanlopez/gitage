@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"filippo.io/age"
+	"github.com/go-git/go-billy/v5"
 
 	"github.com/joanlopez/gitage/internal/fs"
 )
@@ -22,7 +23,7 @@ import (
 //
 // Arguments:
 // - path: must be an absolute path.
-func EncryptAll(ctx context.Context, f fs.Fs, path string, recipients ...age.Recipient) error {
+func EncryptAll(ctx context.Context, f billy.Filesystem, path string, recipients ...age.Recipient) error {
 	return fs.Walk(f, path, func(path string, info stdfs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -55,17 +56,11 @@ func EncryptAll(ctx context.Context, f fs.Fs, path string, recipients ...age.Rec
 //
 // Arguments:
 // - path: must be an absolute path.
-func EncryptFile(ctx context.Context, f fs.Fs, path string, recipients ...age.Recipient) error {
-	file, err := f.Open(path)
+func EncryptFile(ctx context.Context, f billy.Filesystem, path string, recipients ...age.Recipient) error {
+	read, err := fs.Read(f, path)
 	if err != nil {
 		return err
 	}
-
-	read, err := fs.ReadAll(file)
-	if err != nil {
-		return err
-	}
-	file.Close()
 
 	if err = fs.RemoveAll(f, path); err != nil {
 		return err

@@ -7,15 +7,15 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/go-git/go-billy/v5"
 	"github.com/spf13/cobra"
 
-	"github.com/joanlopez/gitage/internal/fs"
 	"github.com/joanlopez/gitage/internal/log"
 )
 
 type CLI struct {
 	ctx context.Context
-	fs  fs.Fs
+	fs  billy.Filesystem
 
 	// Flags
 	path           string
@@ -34,7 +34,7 @@ type CLI struct {
 	decrypt    *cobra.Command
 }
 
-func New(ctx context.Context, fs fs.Fs) *CLI {
+func New(ctx context.Context, fs billy.Filesystem) *CLI {
 	c := &CLI{
 		ctx: ctx,
 		fs:  fs,

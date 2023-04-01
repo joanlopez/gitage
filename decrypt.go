@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"filippo.io/age"
+	"github.com/go-git/go-billy/v5"
 
 	"github.com/joanlopez/gitage/internal/fs"
 )
@@ -22,7 +23,7 @@ import (
 //
 // Arguments:
 // - path: must be an absolute path.
-func DecryptAll(ctx context.Context, f fs.Fs, path string, identities ...age.Identity) error {
+func DecryptAll(ctx context.Context, f billy.Filesystem, path string, identities ...age.Identity) error {
 	return fs.Walk(f, path, func(path string, info stdfs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -60,17 +61,11 @@ func DecryptAll(ctx context.Context, f fs.Fs, path string, identities ...age.Ide
 //
 // Arguments:
 // - path: must be an absolute path.
-func DecryptFile(ctx context.Context, f fs.Fs, path string, identities ...age.Identity) error {
-	file, err := f.Open(path)
+func DecryptFile(ctx context.Context, f billy.Filesystem, path string, identities ...age.Identity) error {
+	read, err := fs.Read(f, path)
 	if err != nil {
 		return err
 	}
-
-	read, err := fs.ReadAll(file)
-	if err != nil {
-		return err
-	}
-	file.Close()
 
 	if err = fs.RemoveAll(f, path); err != nil {
 		return err

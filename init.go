@@ -5,13 +5,15 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/go-git/go-billy/v5"
+
 	"github.com/joanlopez/gitage/internal/fs"
 	"github.com/joanlopez/gitage/internal/log"
 )
 
 // Init docs (TODO)
 // - path MUST be an absolute path.
-func Init(ctx context.Context, f fs.Fs, path string, recipients ...string) error {
+func Init(ctx context.Context, f billy.Filesystem, path string, recipients ...string) error {
 	gitageDir := dir(path)
 	info, err := f.Stat(gitageDir)
 	if err == nil {
