@@ -21,7 +21,7 @@ func FsFromArchive(a *Archive) (billy.Filesystem, error) {
 	for f := range a.Files() {
 		fName := Rootify(f.Name)
 
-		if strings.HasSuffix(fName, "/") {
+		if strings.HasSuffix(f.Name, "/") {
 			if err := fs.Mkdir(memFs, fName); err != nil {
 				return nil, err
 			}
