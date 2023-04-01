@@ -1,4 +1,4 @@
-# Gitage
+# Gitage [![GoDoc](https://godoc.org/gopkg.in/joanlopez/gitage?status.svg)](https://pkg.go.dev/github.com/joanlopez/gitage) [![Test](https://github.com/joanlopez/gitage/workflows/Test/badge.svg)](https://github.com/joanlopez/gitage/actions?query=workflow%3ATest)
 
 **[Git](https://git-scm.com/)+[age](https://github.com/FiloSottile/age) = Gitage;** simple, modern and secure Git encryption
 tool
